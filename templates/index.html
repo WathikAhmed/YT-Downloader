@@ -1,36 +1,131 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
     <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
-        input[type="url"] { width: 400px; padding: 10px; margin: 10px; }
-        button { padding: 10px 20px; background: #ff0000; color: white; border: none; cursor: pointer; }
-        button:hover { background: #cc0000; }
-        #status { margin-top: 20px; padding: 10px; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { 
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .input-group {
+            margin-bottom: 25px;
+        }
+        input[type="url"] { 
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+        input[type="url"]:focus {
+            border-color: #667eea;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        button { 
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 65, 108, 0.3);
+        }
+        .clear-btn {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+        }
+        .clear-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        #status { 
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .success { 
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .error { 
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 30px 20px; }
+            h1 { font-size: 24px; }
+            .button-group { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <h1>YouTube Downloader</h1>
-    <div>
-        <input type="url" id="urlInput" placeholder="Enter YouTube URL" required>
-        <button onclick="downloadVideo()">Download</button>
+    <div class="container">
+        <h1>🎥 YouTube Downloader</h1>
+        <div class="input-group">
+            <input type="url" id="urlInput" placeholder="Paste YouTube URL here..." required>
+        </div>
+        <div class="button-group">
+            <button class="download-btn" onclick="downloadVideo()">📥 Download</button>
+            <button class="clear-btn" onclick="clearInput()">🗑️ Clear</button>
+        </div>
+        <div id="status"></div>
     </div>
-    <div id="status"></div>
 
     <script>
+        function clearInput() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('status').innerHTML = '';
+        }
+        
         async function downloadVideo() {
             const url = document.getElementById('urlInput').value;
             const status = document.getElementById('status');
             
             if (!url) {
-                status.innerHTML = '<div class="error">Please enter a YouTube URL</div>';
+                status.innerHTML = '<div class="error">⚠️ Please enter a YouTube URL</div>';
                 return;
             }
             
-            status.innerHTML = '<div>Downloading...</div>';
+            status.innerHTML = '<div style="color: #667eea; font-weight: 600;">⏳ Downloading...</div>';
             
             try {
                 const response = await fetch('/download', {
@@ -42,12 +137,12 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    status.innerHTML = `<div class="success">${result.message}</div>`;
+                    status.innerHTML = `<div class="success">✅ ${result.message}</div>`;
                 } else {
-                    status.innerHTML = `<div class="error">${result.message}</div>`;
+                    status.innerHTML = `<div class="error">❌ ${result.message}</div>`;
                 }
             } catch (error) {
-                status.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                status.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
             }
         }
     </script>
