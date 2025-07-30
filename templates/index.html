@@ -186,25 +186,44 @@
             }
         }
         
-        async function showFiles() {
+        async function showFiles(path = '') {
             const status = document.getElementById('status');
             
             try {
-                const response = await fetch('/files');
+                const url = path ? `/files/${path}` : '/files';
+                const response = await fetch(url);
                 const result = await response.json();
                 
-                if (result.files && result.files.length > 0) {
-                    let filesList = '<div class="files-list"><h3>📁 Downloaded Files:</h3>';
-                    result.files.forEach(file => {
+                if (result.items && result.items.length > 0) {
+                    let filesList = '<div class="files-list">';
+                    filesList += `<h3>📁 ${path || 'Downloads'}</h3>`;
+                    
+                    if (path) {
+                        const parentPath = path.includes('/') ? path.split('/').slice(0, -1).join('/') : '';
                         filesList += `<div class="file-item">
-                            <span class="file-name">${file}</span>
-                            <a href="/files/${encodeURIComponent(file)}" class="download-link" download>Download</a>
+                            <span class="file-name">⬅️ Back</span>
+                            <button onclick="showFiles('${parentPath}')" class="download-link">Go Back</button>
                         </div>`;
+                    }
+                    
+                    result.items.forEach(item => {
+                        const itemPath = path ? `${path}/${item.name}` : item.name;
+                        if (item.type === 'folder') {
+                            filesList += `<div class="file-item">
+                                <span class="file-name">📁 ${item.name}</span>
+                                <button onclick="showFiles('${itemPath}')" class="download-link">Open</button>
+                            </div>`;
+                        } else {
+                            filesList += `<div class="file-item">
+                                <span class="file-name">📹 ${item.name}</span>
+                                <a href="/download/${encodeURIComponent(itemPath)}" class="download-link" download>Download</a>
+                            </div>`;
+                        }
                     });
                     filesList += '</div>';
                     status.innerHTML = filesList;
                 } else {
-                    status.innerHTML = '<div style="color: #667eea; font-weight: 600;">📂 No files found in downloads folder</div>';
+                    status.innerHTML = '<div style="color: #667eea; font-weight: 600;">📂 No files found</div>';
                 }
             } catch (error) {
                 status.innerHTML = `<div class="error">❌ Error loading files: ${error.message}</div>`;

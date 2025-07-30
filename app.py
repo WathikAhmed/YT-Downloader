@@ -9,24 +9,30 @@ def index():
     return render_template('index.html')
 
 @app.route('/files')
-def list_files():
+@app.route('/files/<path:subpath>')
+def list_files(subpath=''):
     try:
-        downloads_dir = 'downloads'
+        downloads_dir = os.path.join('downloads', subpath) if subpath else 'downloads'
         if not os.path.exists(downloads_dir):
-            return jsonify({'files': []})
+            return jsonify({'items': []})
         
-        files = []
-        for filename in os.listdir(downloads_dir):
-            if os.path.isfile(os.path.join(downloads_dir, filename)):
-                files.append(filename)
+        items = []
+        for item in os.listdir(downloads_dir):
+            if item.startswith('.'):  # Skip hidden files like .DS_Store
+                continue
+            item_path = os.path.join(downloads_dir, item)
+            if os.path.isfile(item_path):
+                items.append({'name': item, 'type': 'file'})
+            elif os.path.isdir(item_path):
+                items.append({'name': item, 'type': 'folder'})
         
-        return jsonify({'files': files})
+        return jsonify({'items': items, 'path': subpath})
     except Exception as e:
         return jsonify({'error': str(e)})
 
-@app.route('/files/<filename>')
-def download_file(filename):
-    return send_from_directory('downloads', filename)
+@app.route('/download/<path:filepath>')
+def download_file(filepath):
+    return send_from_directory('downloads', filepath)
 
 @app.route('/download', methods=['POST'])
 def download():
