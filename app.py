@@ -26,6 +26,9 @@ def list_files(subpath=''):
             elif os.path.isdir(item_path):
                 items.append({'name': item, 'type': 'folder'})
         
+        # Sort items: folders first, then files, both alphabetically by name
+        items.sort(key=lambda x: (x['type'] == 'file', x['name'].lower()))
+        
         return jsonify({'items': items, 'path': subpath})
     except Exception as e:
         return jsonify({'error': str(e)})
@@ -33,6 +36,32 @@ def list_files(subpath=''):
 @app.route('/download/<path:filepath>')
 def download_file(filepath):
     return send_from_directory('downloads', filepath)
+
+@app.route('/rename', methods=['POST'])
+def rename_file():
+    try:
+        data = request.json
+        filepath = data['filepath']
+        
+        full_path = os.path.join('downloads', filepath)
+        if not os.path.exists(full_path):
+            return jsonify({'status': 'error', 'message': 'File not found'})
+        
+        # Get directory and filename
+        dir_path = os.path.dirname(full_path)
+        filename = os.path.basename(full_path)
+        
+        # Add Z prefix
+        new_filename = 'Z' + filename
+        new_path = os.path.join(dir_path, new_filename)
+        
+        # Rename the file
+        os.rename(full_path, new_path)
+        
+        return jsonify({'status': 'success', 'message': 'File renamed successfully'})
+    
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
 
 @app.route('/download', methods=['POST'])
 def download():
