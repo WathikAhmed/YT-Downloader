@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import yt_dlp
 import os
 
@@ -7,6 +7,26 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/files')
+def list_files():
+    try:
+        downloads_dir = 'downloads'
+        if not os.path.exists(downloads_dir):
+            return jsonify({'files': []})
+        
+        files = []
+        for filename in os.listdir(downloads_dir):
+            if os.path.isfile(os.path.join(downloads_dir, filename)):
+                files.append(filename)
+        
+        return jsonify({'files': files})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/files/<filename>')
+def download_file(filename):
+    return send_from_directory('downloads', filename)
 
 @app.route('/download', methods=['POST'])
 def download():

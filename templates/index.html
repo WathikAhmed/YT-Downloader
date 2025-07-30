@@ -76,6 +76,43 @@
             background: #e9ecef;
             transform: translateY(-2px);
         }
+        .files-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .files-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        .files-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .file-item {
+            background: #f8f9fa;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-name {
+            flex: 1;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .download-link {
+            background: #007bff;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .download-link:hover {
+            background: #0056b3;
+        }
         #status { 
             padding: 16px;
             border-radius: 12px;
@@ -106,6 +143,9 @@
         <div class="button-group">
             <button class="download-btn" onclick="downloadVideo()">📥 Download</button>
             <button class="clear-btn" onclick="clearInput()">🗑️ Clear</button>
+        </div>
+        <div class="button-group">
+            <button class="files-btn" onclick="showFiles()">📁 View Files</button>
         </div>
         <div id="status"></div>
     </div>
@@ -143,6 +183,31 @@
                 }
             } catch (error) {
                 status.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function showFiles() {
+            const status = document.getElementById('status');
+            
+            try {
+                const response = await fetch('/files');
+                const result = await response.json();
+                
+                if (result.files && result.files.length > 0) {
+                    let filesList = '<div class="files-list"><h3>📁 Downloaded Files:</h3>';
+                    result.files.forEach(file => {
+                        filesList += `<div class="file-item">
+                            <span class="file-name">${file}</span>
+                            <a href="/files/${encodeURIComponent(file)}" class="download-link" download>Download</a>
+                        </div>`;
+                    });
+                    filesList += '</div>';
+                    status.innerHTML = filesList;
+                } else {
+                    status.innerHTML = '<div style="color: #667eea; font-weight: 600;">📂 No files found in downloads folder</div>';
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Error loading files: ${error.message}</div>`;
             }
         }
     </script>
